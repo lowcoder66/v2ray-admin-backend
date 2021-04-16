@@ -1,5 +1,5 @@
 package response
 
 type IDRes struct {
-	Id int `json:"id"`
+	Id uint32 `json:"id"`
 }

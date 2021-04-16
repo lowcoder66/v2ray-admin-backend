@@ -6,12 +6,12 @@ import (
 
 type (
 	User struct {
-		Id      int    `xorm:"notnull pk autoincr INT(11)" json:"id"`
+		Id      uint32 `xorm:"notnull pk autoincr INT(11)" json:"id"`
 		UId     string `xorm:"notnull unique VARCHAR(36)" json:"uid"`
 		Name    string `xorm:"notnull VARCHAR(255)" json:"name"`
 		Email   string `xorm:"notnull unique VARCHAR(255)" json:"email"`
-		Level   int    `xorm:"notnull INT(11)" json:"level"`
-		AlterId int    `xorm:"notnull INT(11)" json:"alterId"`
+		Level   uint32 `xorm:"notnull INT(11)" json:"level"`
+		AlterId uint32 `xorm:"notnull INT(11)" json:"alterId"`
 		Passwd  string `xorm:"notnull VARCHAR(255)" json:"passwd"`
 		Phone   string `xorm:"VARCHAR(255)" json:"phone"`
 		Enabled bool   `xorm:"notnull Bool default(true)" json:"enabled"`
@@ -20,7 +20,9 @@ type (
 	}
 
 	UserQuery struct {
-		Keyword string `json:"Keyword"`
+		Keyword string
+		Enabled bool
+		Locked  bool
 	}
 )
 

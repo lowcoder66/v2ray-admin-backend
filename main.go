@@ -32,8 +32,8 @@ func main() {
 
 	// middleware
 	engine.Use(middleware.Secure())
-	skipPaths := []string{"/token", "/password"}
-	engine.Use(auth.TokenAuth(skipPaths))
+	//skipPaths := []string{"/token", "/password", "/configuration"}
+	//engine.Use(auth.TokenAuth(skipPaths))
 
 	log.Println("注册路由...")
 	addRouters(engine)
@@ -43,15 +43,21 @@ func main() {
 	if err != nil {
 		log.Println("echo engine:", err)
 	}
+
+	// 启动 v2ray core
+	log.Println("启动V2ray...")
+
 }
 
 func addRouters(e *echo.Echo) {
 	// public
 	e.POST(`/token`, controller.NewToken)
 	e.POST(`/password`, controller.PostPassword)
+	e.GET(`/configuration`, controller.GetConf)
 
-	// user
-	e.GET("/principal", controller.Principal)
+	// auth
+	ag := e.Group("", auth.TokenAuth(nil))
+	ag.GET("/principal", controller.Principal)
 
 	// management
 	mg := e.Group("/management", auth.ManagementEndpoint())

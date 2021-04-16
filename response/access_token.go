@@ -5,5 +5,5 @@ import "time"
 type AccessToken struct {
 	Token    string    `json:"token"`
 	ReqTime  time.Time `json:"reqTime"`
-	ExpireIn int       `json:"expireIn"`
+	ExpireIn uint32    `json:"expireIn"`
 }

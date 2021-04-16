@@ -48,3 +48,8 @@ password = "nuoyi123!"
 port = 465
 username = "attendant@chinanuoyi.cn"
 from = "VA-System"
+
+[v2ray]
+host = "192.168.2.210"
+port = 8998
+tag = "proxy"

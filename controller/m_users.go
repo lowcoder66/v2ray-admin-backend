@@ -1,12 +1,15 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"strconv"
+	"strings"
 	"v2ray-admin/backend/auth"
 	"v2ray-admin/backend/model"
 	"v2ray-admin/backend/response"
+	"v2ray-admin/backend/service"
 	"v2ray-admin/backend/util"
 )
 
@@ -15,8 +18,8 @@ type (
 		Email   string `json:"email" form:"email" validate:"required"`
 		UId     string `json:"uid" form:"uid" validate:"required"`
 		Name    string `form:"name" json:"name" validate:"required"`
-		Level   int    `form:"level" json:"level" validate:"required"`
-		AlterId int    `form:"alterId" json:"alterId" validate:"required"`
+		Level   uint32 `form:"level" json:"level" validate:"required"`
+		AlterId uint32 `form:"alterId" json:"alterId" validate:"required"`
 		Phone   string `form:"phone" json:"phone"`
 		Enabled bool   `form:"enabled" json:"enabled"`
 		Locked  bool   `form:"locked" json:"locked"`
@@ -28,8 +31,8 @@ type (
 		Email   string `json:"email"`
 		UId     string `json:"uid"`
 		Name    string `json:"name"`
-		Level   int    `json:"level"`
-		AlterId int    `json:"alterId"`
+		Level   uint32 `json:"level"`
+		AlterId uint32 `json:"alterId"`
 		Phone   string `json:"phone"`
 		Enabled bool   `json:"enabled"`
 		Locked  bool   `json:"locked"`
@@ -78,9 +81,15 @@ func AddUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.ErrRes("邮箱已注册", nil))
 	}
 
-	// 持久化
 	user := &model.User{}
 	util.CopyFields(req, user)
+
+	// 远程调用
+	if err := service.AddUser(user); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.ErrRes("添加用户失败", err))
+	}
+
+	// 持久化
 	model.AddUser(user)
 
 	return ctx.JSON(http.StatusOK, &response.IDRes{Id: user.Id})
@@ -104,6 +113,13 @@ func DelUser(ctx echo.Context) error {
 	principal := ctx.Get("principal").(*auth.Principal)
 	if principal.Id == user.Id {
 		return ctx.JSON(http.StatusNotFound, response.ErrRes("无法删除自己", nil))
+	}
+
+	// 远程调用
+	if err := service.RemoveUser(user); err != nil {
+		if !strings.Contains(err.Error(), fmt.Sprintf("User %s not found", user.Email)) {
+			return ctx.JSON(http.StatusInternalServerError, response.ErrRes("删除用户失败", err))
+		}
 	}
 
 	model.RemoveUser(intId)
@@ -159,6 +175,8 @@ func GetUser(ctx echo.Context) error {
 
 	userResp := &UserResp{}
 	util.CopyFields(user, userResp)
+
+	service.QueryUserTraffic(user.Email)
 
 	return ctx.JSON(http.StatusOK, userResp)
 }

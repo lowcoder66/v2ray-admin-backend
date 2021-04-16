@@ -6,11 +6,11 @@ import (
 )
 
 type Token struct {
-	Id        int       `xorm:"notnull pk autoincr INT(11)" json:"id"`
-	UserId    int       `xorm:"notnull INT(11)" json:"user_id"`
+	Id        uint32    `xorm:"notnull pk autoincr INT(11)" json:"id"`
+	UserId    uint32    `xorm:"notnull INT(11)" json:"user_id"`
 	Value     string    `xorm:"notnull VARCHAR(255)" json:"value"`
 	ReqTime   time.Time `xorm:"notnull DateTime" json:"req_time"`
-	ExpireIn  int       `xorm:"notnull INT(11)" json:"expire_in"`
+	ExpireIn  uint32    `xorm:"notnull INT(11)" json:"expire_in"`
 	DeletedAt time.Time `xorm:"deleted"`
 }
 
@@ -28,7 +28,7 @@ func AddToken(token *Token) bool {
 	return false
 }
 
-func GetTokenByUserId(userId int) *Token {
+func GetTokenByUserId(userId uint32) *Token {
 	token := &Token{}
 	exist, _ := DB.Where("user_id=?", userId).Get(token)
 	if exist {
@@ -38,13 +38,13 @@ func GetTokenByUserId(userId int) *Token {
 	}
 }
 
-func RemoveToken(id int) bool {
+func RemoveToken(id uint32) bool {
 	sess := DB.NewSession()
 	defer sess.Close()
 	_ = sess.Begin()
 
 	if _, err := sess.ID(id).Delete(&Token{}); err == nil {
-		_ = DB.ClearCacheBean(&Token{}, strconv.Itoa(id))
+		_ = DB.ClearCacheBean(&Token{}, strconv.Itoa(int(id)))
 		_ = sess.Commit()
 		return true
 	}

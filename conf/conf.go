@@ -48,6 +48,11 @@ type AppConfig struct {
 		Password string `toml:"password"`
 		From     string `toml:"from"`
 	} `toml:"smtp"`
+	V2ray struct {
+		Host string `toml:"host"`
+		Port int    `toml:"port"`
+		Tag  string `toml:"tag"`
+	} `toml:"v2ray"`
 }
 
 var (

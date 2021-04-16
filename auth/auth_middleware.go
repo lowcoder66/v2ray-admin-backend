@@ -12,12 +12,12 @@ import (
 
 type (
 	Principal struct {
-		Id      int    `json:"id"`
+		Id      uint32 `json:"id"`
 		UId     string `json:"uid"`
 		Name    string `json:"name"`
 		Email   string `json:"email"`
-		Level   int    `json:"level"`
-		AlterId int    `json:"alterId"`
+		Level   uint32 `json:"level"`
+		AlterId uint32 `json:"alterId"`
 		Phone   string `json:"phone"`
 		Admin   bool   `json:"admin"`
 	}
@@ -37,6 +37,10 @@ func ManagementEndpoint() echo.MiddlewareFunc {
 }
 func TokenAuth(skipPaths []string) echo.MiddlewareFunc {
 	pathSkipper := func(ctx echo.Context) bool {
+		if skipPaths == nil {
+			return false
+		}
+
 		for i := 0; i < len(skipPaths); i++ {
 			match, _ := path.Match(skipPaths[i], ctx.Request().URL.Path)
 			if match {
@@ -73,7 +77,7 @@ func TokenAuth(skipPaths []string) echo.MiddlewareFunc {
 			}
 
 			// 注入用户信息
-			user, _ := model.GetUserById(t.UserId)
+			user, _ := model.GetUserById(int(t.UserId))
 			if user == nil {
 				return ctx.JSON(http.StatusForbidden, response.ErrRes("用户不存在", nil))
 			}

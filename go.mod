@@ -9,7 +9,9 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/lib/pq v1.10.0
+	google.golang.org/grpc v1.37.0
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
-	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
+	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
+	v2ray.com/core v4.19.1+incompatible
 	xorm.io/xorm v1.0.7
 )
