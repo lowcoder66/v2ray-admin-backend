@@ -56,8 +56,8 @@ type (
 var defPolicy = &conf.Policy{}
 var defHandShake = uint32(4)
 var defConnIdle = uint32(300)
-var defUpLinkOnly = uint32(2)
-var defDownLinkOnly = uint32(5)
+var defUpLinkOnly = uint32(1)
+var defDownLinkOnly = uint32(1)
 var defBufferSize = int32(10240)
 
 func init() {
@@ -94,10 +94,10 @@ func GetConf(ctx echo.Context) error {
 				log.Panicln(err)
 			}
 
-			// 加载用户
+			// 加载用户（启用的用户）
 			vMessUsers := make([]json.RawMessage, 0)
-			pageNum, size, query := 1, 10, model.UserQuery{Locked: false, Enabled: true}
-			page, err := model.FindUser(query, pageNum, size)
+			pageNum, size := 1, 10
+			page, err := model.FindUserByEnabled(true, pageNum, size)
 			if err != nil {
 				log.Panicln(err)
 			}
@@ -125,7 +125,7 @@ func GetConf(ctx echo.Context) error {
 					}
 
 					pageNum += 1
-					page, err = model.FindUser(query, pageNum, size)
+					page, err = model.FindUserByEnabled(true, pageNum, size)
 					if err != nil {
 						log.Panicln(err)
 					}

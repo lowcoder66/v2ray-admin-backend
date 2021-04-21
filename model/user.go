@@ -2,6 +2,7 @@ package model
 
 import (
 	"strconv"
+	"strings"
 )
 
 type (
@@ -17,12 +18,6 @@ type (
 		Enabled bool   `xorm:"notnull Bool default(true)" json:"enabled"`
 		Locked  bool   `xorm:"notnull Bool default(false)" json:"locked"`
 		Admin   bool   `xorm:"notnull Bool default(false)" json:"admin"`
-	}
-
-	UserQuery struct {
-		Keyword string
-		Enabled bool
-		Locked  bool
 	}
 )
 
@@ -73,18 +68,30 @@ func AddUser(mod *User) bool {
 	return false
 }
 
-func FindUser(query UserQuery, page int, size int) (*Page, error) {
+func FindUserByKeyword(keyword string, page int, size int) (*Page, error) {
 	mods := make([]User, 0)
 
 	sess := DB.NewSession()
 	defer sess.Close()
 
-	if &query != nil {
-		if &query.Keyword != nil {
-			lv := "%" + query.Keyword + "%"
-			sess.Where("name like ?", lv).Or("email like ?", lv).Or("phone like ?", lv)
-		}
+	if keyword != "" {
+		lv := "%" + strings.ToUpper(keyword) + "%"
+		sess.Where("UPPER(name) like ?", lv).Or("UPPER(email) like ?", lv).Or("phone like ?", lv)
 	}
+
+	err := sess.Desc("id").Limit(size, (page-1)*size).Find(&mods)
+	count, err := sess.Count(&User{})
+
+	return &Page{mods, page, size, count}, err
+}
+
+func FindUserByEnabled(enabled bool, page int, size int) (*Page, error) {
+	mods := make([]User, 0)
+
+	sess := DB.NewSession()
+	defer sess.Close()
+
+	sess.Where("enabled = ?", enabled)
 
 	err := sess.Desc("id").Limit(size, (page-1)*size).Find(&mods)
 	count, err := sess.Count(&User{})

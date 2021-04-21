@@ -45,9 +45,7 @@ func ListUsers(ctx echo.Context) error {
 	// page params
 	pageParams := GetParaParams(ctx)
 	// search
-	query := model.UserQuery{Keyword: ctx.QueryParam("keyword")}
-
-	page, err := model.FindUser(query, pageParams.Page, pageParams.Size)
+	page, err := model.FindUserByKeyword(ctx.QueryParam("keyword"), pageParams.Page, pageParams.Size)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, response.ErrRes("查询用户列表错误", err))
 	}
@@ -160,8 +158,10 @@ func EditUser(ctx echo.Context) error {
 			return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
 		}
 	}
-	if err := service.AddUser(user); err != nil {
-		return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+	if user.Enabled {
+		if err := service.AddUser(user); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+		}
 	}
 
 	// 不允许修改 email admin
