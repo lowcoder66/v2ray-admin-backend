@@ -49,9 +49,10 @@ type AppConfig struct {
 		From     string `toml:"from"`
 	} `toml:"smtp"`
 	V2ray struct {
-		Host string `toml:"host"`
-		Port int    `toml:"port"`
-		Tag  string `toml:"tag"`
+		Host       string `toml:"host"`
+		Port       int    `toml:"port"`
+		Tag        string `toml:"tag"`
+		LevelRange string `toml:"level_range"`
 	} `toml:"v2ray"`
 }
 

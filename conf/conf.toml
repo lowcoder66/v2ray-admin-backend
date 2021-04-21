@@ -53,3 +53,4 @@ from = "VA-System"
 host = "192.168.2.210"
 port = 8998
 tag = "proxy"
+level_range = "1-12"

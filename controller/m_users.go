@@ -27,7 +27,7 @@ type (
 	}
 
 	UserResp struct {
-		Id      int    `json:"id"`
+		Id      uint32 `json:"id"`
 		Email   string `json:"email"`
 		UId     string `json:"uid"`
 		Name    string `json:"name"`
@@ -153,6 +153,17 @@ func EditUser(ctx echo.Context) error {
 	}
 
 	util.CopyFields(req, user)
+
+	// 远程调用修改用户
+	if err := service.RemoveUser(user); err != nil {
+		if !strings.Contains(err.Error(), fmt.Sprintf("User %s not found", user.Email)) {
+			return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+		}
+	}
+	if err := service.AddUser(user); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+	}
+
 	// 不允许修改 email admin
 	model.ModifyUser(user, "name", "level", "alter_id", "phone", "enabled", "locked")
 
@@ -175,8 +186,6 @@ func GetUser(ctx echo.Context) error {
 
 	userResp := &UserResp{}
 	util.CopyFields(user, userResp)
-
-	service.QueryUserTraffic(user.Email)
 
 	return ctx.JSON(http.StatusOK, userResp)
 }

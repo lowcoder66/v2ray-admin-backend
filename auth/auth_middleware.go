@@ -26,8 +26,12 @@ type (
 func ManagementEndpoint() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
-			principal := ctx.Get("principal").(*Principal)
-			if &principal == nil || !principal.Admin {
+			principalInterface := ctx.Get("principal")
+			if principalInterface == nil {
+				return ctx.JSON(http.StatusUnauthorized, response.ErrRes("未认证", nil))
+			}
+			principal := principalInterface.(*Principal)
+			if !principal.Admin {
 				return ctx.JSON(http.StatusForbidden, response.ErrRes("无权访问", nil))
 			}
 

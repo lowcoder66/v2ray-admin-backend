@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"log"
+	"strings"
 	"v2ray-admin/backend/conf"
 	"v2ray-admin/backend/model"
 	proxyCmd "v2ray.com/core/app/proxyman/command"
@@ -75,18 +76,55 @@ func RemoveUser(user *model.User) error {
 	return err
 }
 
-func QueryUserTraffic(email string) {
+func QueryUserTraffic(email string, reset bool) (uint64, uint64) {
 	resp, err := statsClient.QueryStats(context.Background(), &statsCmd.QueryStatsRequest{
-		Pattern: fmt.Sprintf("user>>>%s>>>traffic>>>uplink", email),
-		Reset_:  false, // 查询完成后是否重置流量
+		Pattern: fmt.Sprintf("user>>>%s>>>traffic>>>", email),
+		Reset_:  reset,
 	})
 	if err != nil {
 		log.Printf("failed to call grpc command: %v", err)
 	}
 
 	stat := resp.GetStat()
-	// 返回的是一个数组，对其进行遍历输出
+
+	up, down := uint64(0), uint64(0)
 	for _, e := range stat {
-		fmt.Println(e)
+		if strings.HasSuffix(e.Name, ">>>uplink") {
+			up = uint64(e.Value)
+		}
+		if strings.HasSuffix(e.Name, ">>>downlink") {
+			down = uint64(e.Value)
+		}
 	}
+
+	return up, down
+}
+
+func QueryGlobalTraffic(reset bool, tag string) (uint64, uint64) {
+	queryPattern := "inbound>>>"
+	if &tag != nil && tag != "" {
+		queryPattern += tag + ">>>"
+	}
+
+	resp, err := statsClient.QueryStats(context.Background(), &statsCmd.QueryStatsRequest{
+		Pattern: queryPattern,
+		Reset_:  reset,
+	})
+	if err != nil {
+		log.Printf("failed to call grpc command: %v", err)
+	}
+
+	stat := resp.GetStat()
+
+	up, down := uint64(0), uint64(0)
+	for _, e := range stat {
+		if strings.HasSuffix(e.Name, ">>>uplink") {
+			up = uint64(e.Value)
+		}
+		if strings.HasSuffix(e.Name, ">>>downlink") {
+			down = uint64(e.Value)
+		}
+	}
+
+	return up, down
 }

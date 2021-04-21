@@ -74,7 +74,7 @@ func AddUser(mod *User) bool {
 }
 
 func FindUser(query UserQuery, page int, size int) (*Page, error) {
-	mods := make([]User, 0, size)
+	mods := make([]User, 0)
 
 	sess := DB.NewSession()
 	defer sess.Close()

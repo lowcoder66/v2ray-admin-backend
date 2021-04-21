@@ -10,6 +10,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
+	c "v2ray-admin/backend/conf"
 	"v2ray-admin/backend/model"
 	"v2ray-admin/backend/util"
 	"v2ray.com/core/infra/conf"
@@ -22,6 +25,31 @@ type (
 		AlterId uint32 `json:"alterId"`
 		Level   uint32 `json:"level"`
 		Email   string `json:"email,omitempty"`
+	}
+
+	ServerConfig struct {
+		LogConfig       *conf.LogConfig             `json:"log,omitempty"`
+		RouterConfig    *conf.RouterConfig          `json:"routing,omitempty"`
+		DNSConfig       *conf.DnsConfig             `json:"dns,omitempty"`
+		InboundConfigs  []InboundDetourConfig       `json:"inbounds,omitempty"`
+		OutboundConfigs []conf.OutboundDetourConfig `json:"outbounds,omitempty"`
+		Transport       *conf.TransportConfig       `json:"transport,omitempty"`
+		Policy          *conf.PolicyConfig          `json:"policy,omitempty"`
+		Api             *conf.ApiConfig             `json:"api,omitempty"`
+		Stats           *conf.StatsConfig           `json:"stats,omitempty"`
+		Reverse         *conf.ReverseConfig         `json:"reverse,omitempty"`
+	}
+
+	InboundDetourConfig struct {
+		Protocol       string                              `json:"protocol,omitempty"`
+		PortRange      interface{}                         `json:"port,omitempty"`
+		ListenOn       interface{}                         `json:"listen,omitempty"`
+		Settings       *json.RawMessage                    `json:"settings,omitempty"`
+		Tag            string                              `json:"tag,omitempty"`
+		Allocation     *conf.InboundDetourAllocationConfig `json:"allocate,omitempty"`
+		StreamSetting  *conf.StreamConfig                  `json:"streamSettings,omitempty"`
+		DomainOverride *conf.StringList                    `json:"domainOverride,omitempty"`
+		SniffingConfig *conf.SniffingConfig                `json:"sniffing,omitempty"`
 	}
 )
 
@@ -43,8 +71,20 @@ func init() {
 	defPolicy.StatsUserDownlink = true
 }
 
+func GetConfLevelRange(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, getLevelRange())
+}
+
 func GetConf(ctx echo.Context) error {
 	serverConf := readConf()
+
+	// level range
+	levelRange := getLevelRange()
+	for ri := levelRange[0]; ri <= levelRange[1]; ri++ {
+		if _, ok := serverConf.Policy.Levels[uint32(ri)]; !ok {
+			serverConf.Policy.Levels[uint32(ri)] = defPolicy
+		}
+	}
 
 	for i, in := range serverConf.InboundConfigs {
 		// 代理入站设置
@@ -78,13 +118,13 @@ func GetConf(ctx echo.Context) error {
 						userJsonRaw := json.RawMessage(userJson)
 						vMessUsers = append(vMessUsers, userJsonRaw)
 
-						// policy levels
+						// user policy levels
 						if _, ok := serverConf.Policy.Levels[user.Level]; !ok {
 							serverConf.Policy.Levels[user.Level] = defPolicy
 						}
 					}
 
-					pageNum += pageNum
+					pageNum += 1
 					page, err = model.FindUser(query, pageNum, size)
 					if err != nil {
 						log.Panicln(err)
@@ -103,6 +143,14 @@ func GetConf(ctx echo.Context) error {
 			settingsJsonRaw := json.RawMessage(settingsJson)
 
 			in.Settings = &settingsJsonRaw
+
+			// tag
+			tag := "proxy"
+			if c.App.V2ray.Tag != "" {
+				tag = c.App.V2ray.Tag
+			}
+			in.Tag = tag
+
 			serverConf.InboundConfigs[i] = in
 		}
 		continue
@@ -111,7 +159,7 @@ func GetConf(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, serverConf)
 }
 
-func readConf() *conf.Config {
+func readConf() *ServerConfig {
 	configFile := "/resources/v2ray-server-config.json"
 	configFilePath := getConfigFilePath(configFile)
 
@@ -121,7 +169,7 @@ func readConf() *conf.Config {
 	}
 	reader := bytes.NewReader(jsonBytes)
 
-	jsonConfig := &conf.Config{}
+	jsonConfig := &ServerConfig{}
 	jsonContent := bytes.NewBuffer(make([]byte, 0, 10240))
 	jsonReader := io.TeeReader(&v2RayJsonReader.Reader{
 		Reader: reader,
@@ -149,4 +197,26 @@ func getConfigFilePath(configFile string) string {
 func fileExists(file string) bool {
 	info, err := os.Stat(file)
 	return err == nil && !info.IsDir()
+}
+
+func getLevelRange() []int {
+	levelRange := []int{1, 10}
+	rangeStr := c.App.V2ray.LevelRange
+	if &rangeStr != nil {
+		arr := strings.Split(rangeStr, "-")
+		if &arr[0] != nil {
+			i, err := strconv.Atoi(arr[0])
+			if err == nil {
+				levelRange[0] = i
+			}
+		}
+		if &arr[1] != nil {
+			i, err := strconv.Atoi(arr[1])
+			if err == nil {
+				levelRange[1] = i
+			}
+		}
+	}
+
+	return levelRange
 }

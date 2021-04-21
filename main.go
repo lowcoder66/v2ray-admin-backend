@@ -54,16 +54,21 @@ func addRouters(e *echo.Echo) {
 	e.POST(`/token`, controller.NewToken)
 	e.POST(`/password`, controller.PostPassword)
 	e.GET(`/configuration`, controller.GetConf)
+	e.GET(`/configuration/level-range`, controller.GetConfLevelRange)
 
 	// auth
 	ag := e.Group("", auth.TokenAuth(nil))
 	ag.GET("/principal", controller.Principal)
+	ag.GET("/user-traffic", controller.UserTraffic)
 
 	// management
-	mg := e.Group("/management", auth.ManagementEndpoint())
+	mg := e.Group("/management", auth.TokenAuth(nil), auth.ManagementEndpoint())
 	mg.GET("/users", controller.ListUsers)
 	mg.POST("/users", controller.AddUser)
 	mg.PUT("/users/:id", controller.EditUser)
 	mg.DELETE("/users/:id", controller.DelUser)
 	mg.GET("/users/:id", controller.GetUser)
+	mg.GET("/traffic", controller.GetGlobalTraffic)
+	mg.GET("/traffic/up", controller.GetGlobalUpTraffic)
+	mg.GET("/traffic/down", controller.GetGlobalDownTraffic)
 }

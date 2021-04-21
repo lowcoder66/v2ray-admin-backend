@@ -52,7 +52,7 @@ func init() {
 		db.SetDefaultCacher(cache)
 	}
 	if conf.App.XOrm.Sync {
-		err := db.Sync2(new(User), new(Token))
+		err := db.Sync2(new(User), new(Token), new(Traffic))
 		if err != nil {
 			log.Fatalln("database:", err.Error())
 		}
