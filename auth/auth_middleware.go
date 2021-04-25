@@ -8,6 +8,7 @@ import (
 	"time"
 	"v2ray-admin/backend/model"
 	"v2ray-admin/backend/response"
+	"v2ray-admin/backend/util"
 )
 
 type (
@@ -20,6 +21,7 @@ type (
 		AlterId uint32 `json:"alterId"`
 		Phone   string `json:"phone"`
 		Admin   bool   `json:"admin"`
+		Limit   uint64 `json:"limit"`
 	}
 )
 
@@ -81,17 +83,19 @@ func TokenAuth(skipPaths []string) echo.MiddlewareFunc {
 			}
 
 			// 注入用户信息
-			user, _ := model.GetUserById(int(t.UserId))
+			user, _ := model.GetUserById(t.UserId)
 			if user == nil {
 				return ctx.JSON(http.StatusForbidden, response.ErrRes("用户不存在", nil))
 			}
-			if user.Locked || !user.Enabled {
-				return ctx.JSON(http.StatusForbidden, response.ErrRes("用户状态异常", nil))
+			// 未启用的也可以登录使用
+			//if user.Locked || !user.Enabled {
+			if user.Locked {
+				return ctx.JSON(http.StatusForbidden, response.ErrRes("用户已被锁定", nil))
 			}
 
-			principal := &Principal{user.Id, user.UId, user.Name,
-				user.Email, user.Level, user.AlterId,
-				user.Passwd, user.Admin}
+			principal := &Principal{}
+			util.CopyFields(user, principal)
+
 			ctx.Set("principal", principal)
 
 			return next(ctx)

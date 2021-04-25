@@ -61,7 +61,7 @@ func UserTraffic(ctx echo.Context) error {
 
 	// current month
 	up, down := model.GetUserTrafficOfCurrentMonth(principal.Id)
-	res := UserTrafficRes{50 * 1024 * 1024 * 1024, up, down, userTrafficHistory(principal.Id, true, true)}
+	res := UserTrafficRes{principal.Limit, up, down, userTrafficHistory(principal.Id, true, true)}
 
 	return ctx.JSON(http.StatusOK, res)
 }

@@ -54,3 +54,15 @@ host = "192.168.2.210"
 port = 8998
 tag = "proxy"
 level_range = "1-12"
+
+[conf_tpl]
+address = "192.168.2.210"
+port = 80
+alter_id = 4
+security = "auto"
+network = "ws"
+type = "none"
+host = ""
+path = "/home"
+tls = ""
+allow_insecure = "false"

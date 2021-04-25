@@ -9,6 +9,7 @@ import (
 	"v2ray-admin/backend/auth"
 	"v2ray-admin/backend/conf"
 	"v2ray-admin/backend/controller"
+	"v2ray-admin/backend/task"
 )
 
 func init() {
@@ -38,15 +39,15 @@ func main() {
 	log.Println("注册路由...")
 	addRouters(engine)
 
+	// 启动定时任务
+	log.Println("注册定时任务...")
+	task.RegisterTasks()
+
 	log.Println("启动Echo引擎...")
 	err := engine.Start(fmt.Sprintf(":%d", conf.App.Server.Port))
 	if err != nil {
 		log.Println("echo engine:", err)
 	}
-
-	// 启动 v2ray core
-	log.Println("启动V2ray...")
-
 }
 
 func addRouters(e *echo.Echo) {
@@ -60,6 +61,8 @@ func addRouters(e *echo.Echo) {
 	ag := e.Group("", auth.TokenAuth(nil))
 	ag.GET("/principal", controller.Principal)
 	ag.GET("/user-traffic", controller.UserTraffic)
+	ag.POST("/users/:id", controller.UserOperate)
+	ag.GET("/conf-tpl", controller.GetConfTpl)
 
 	// management
 	mg := e.Group("/management", auth.TokenAuth(nil), auth.ManagementEndpoint())

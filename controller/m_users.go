@@ -24,6 +24,7 @@ type (
 		Enabled bool   `form:"enabled" json:"enabled"`
 		Locked  bool   `form:"locked" json:"locked"`
 		Admin   bool   `form:"admin" json:"admin"`
+		Limit   uint64 `form:"limit" json:"limit"`
 	}
 
 	UserResp struct {
@@ -37,6 +38,7 @@ type (
 		Enabled bool   `json:"enabled"`
 		Locked  bool   `json:"locked"`
 		Admin   bool   `json:"admin"`
+		Limit   uint64 `json:"limit"`
 	}
 )
 
@@ -102,7 +104,7 @@ func DelUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.ErrRes("请求参数不正确", err))
 	}
 
-	user, exist := model.GetUserById(intId)
+	user, exist := model.GetUserById(uint32(intId))
 	if !exist {
 		return ctx.JSON(http.StatusNotFound, response.ErrRes("用户不存在", nil))
 	}
@@ -145,27 +147,34 @@ func EditUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.ErrRes("请求参数不正确", err))
 	}
 
-	user, exist := model.GetUserById(intId)
+	user, exist := model.GetUserById(uint32(intId))
 	if !exist {
 		return ctx.JSON(http.StatusNotFound, response.ErrRes("用户不存在", nil))
+	}
+
+	syncRemote := false
+	if req.Enabled != user.Enabled || req.AlterId != user.AlterId {
+		syncRemote = true
 	}
 
 	util.CopyFields(req, user)
 
 	// 远程调用修改用户
-	if err := service.RemoveUser(user); err != nil {
-		if !strings.Contains(err.Error(), fmt.Sprintf("User %s not found", user.Email)) {
-			return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+	if syncRemote {
+		if err := service.RemoveUser(user); err != nil {
+			if !strings.Contains(err.Error(), fmt.Sprintf("User %s not found", user.Email)) {
+				return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+			}
 		}
-	}
-	if user.Enabled {
-		if err := service.AddUser(user); err != nil {
-			return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+		if user.Enabled {
+			if err := service.AddUser(user); err != nil {
+				return ctx.JSON(http.StatusInternalServerError, response.ErrRes("修改用户失败", err))
+			}
 		}
 	}
 
 	// 不允许修改 email admin
-	model.ModifyUser(user, "name", "level", "alter_id", "phone", "enabled", "locked")
+	model.ModifyUser(user, "name", "level", "alter_id", "phone", "enabled", "locked", "limit")
 
 	return ctx.JSON(http.StatusOK, response.MessageRes("操作成功"))
 }
@@ -179,7 +188,7 @@ func GetUser(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, response.ErrRes("请求参数不正确", err))
 	}
 
-	user, exist := model.GetUserById(intId)
+	user, exist := model.GetUserById(uint32(intId))
 	if !exist {
 		return ctx.JSON(http.StatusNotFound, response.ErrRes("用户不存在", nil))
 	}

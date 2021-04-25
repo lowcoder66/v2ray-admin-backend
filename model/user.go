@@ -18,6 +18,7 @@ type (
 		Enabled bool   `xorm:"notnull Bool default(true)" json:"enabled"`
 		Locked  bool   `xorm:"notnull Bool default(false)" json:"locked"`
 		Admin   bool   `xorm:"notnull Bool default(false)" json:"admin"`
+		Limit   uint64 `xorm:"notnull BIGINT(32) default(0)" json:"limit"`
 	}
 )
 
@@ -34,7 +35,7 @@ func ExistUserByEmail(email string) bool {
 	return exist
 }
 
-func GetUserById(id int) (*User, bool) {
+func GetUserById(id uint32) (*User, bool) {
 	mod := &User{}
 	exist, _ := DB.ID(id).Get(mod)
 	return mod, exist

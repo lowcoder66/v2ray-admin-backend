@@ -54,6 +54,18 @@ type AppConfig struct {
 		Tag        string `toml:"tag"`
 		LevelRange string `toml:"level_range"`
 	} `toml:"v2ray"`
+	ConfTpl struct {
+		Address       string `toml:"address" json:"address"`
+		Port          int    `toml:"port" json:"port"`
+		AlterId       int    `toml:"alter_id" json:"alterId"`
+		Security      string `toml:"security" json:"security"`
+		Network       string `toml:"network" json:"network"`
+		Type          string `toml:"type" json:"type"`
+		Host          string `toml:"host" json:"host"`
+		Path          string `toml:"path" json:"path"`
+		Tls           string `toml:"tls" json:"tls"`
+		AllowInsecure string `toml:"allow_insecure" json:"allowInsecure"`
+	} `toml:"conf_tpl"`
 }
 
 var (

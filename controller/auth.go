@@ -61,9 +61,11 @@ func NewToken(ctx echo.Context) error {
 	}
 
 	// 用户状态
-	if !user.Enabled {
+	/*if !user.Enabled {
 		return ctx.JSON(http.StatusForbidden, response.ErrRes("用户未启用", nil))
-	}
+	}*/
+	// 未启用可以登录
+
 	if user.Locked {
 		return ctx.JSON(http.StatusForbidden, response.ErrRes("用户已锁定，请联系管理员", nil))
 	}
