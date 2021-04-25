@@ -97,6 +97,7 @@ func TokenAuth(skipPaths []string) echo.MiddlewareFunc {
 			util.CopyFields(user, principal)
 
 			ctx.Set("principal", principal)
+			ctx.Set("tokenId", t.Id)
 
 			return next(ctx)
 		}

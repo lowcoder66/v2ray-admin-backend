@@ -63,6 +63,7 @@ func addRouters(e *echo.Echo) {
 	ag.GET("/user-traffic", controller.UserTraffic)
 	ag.POST("/users/:id", controller.UserOperate)
 	ag.GET("/conf-tpl", controller.GetConfTpl)
+	ag.DELETE(`/token`, controller.RevokeCurrentToken)
 
 	// management
 	mg := e.Group("/management", auth.TokenAuth(nil), auth.ManagementEndpoint())

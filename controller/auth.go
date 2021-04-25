@@ -42,6 +42,17 @@ func Principal(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, principal)
 }
 
+func RevokeCurrentToken(ctx echo.Context) error {
+	tokenId := ctx.Get("tokenId").(uint32)
+	if &tokenId == nil {
+		return ctx.JSON(http.StatusUnauthorized, response.ErrRes("未获取到token信息", nil))
+	}
+
+	model.RemoveToken(tokenId)
+
+	return ctx.JSON(http.StatusOK, response.MessageRes("已退出登录"))
+}
+
 func NewToken(ctx echo.Context) error {
 	req := &TokenReq{}
 
