@@ -78,7 +78,7 @@ func init() {
 	var err error
 	App, err = initConfig()
 	if err != nil {
-		log.Println("configuration: ", err.Error())
+		log.Fatal("configuration: ", err.Error())
 	}
 	log.Println("配置初始化完成")
 }

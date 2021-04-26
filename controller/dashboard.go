@@ -126,8 +126,10 @@ func queryAndSaveUserTraffic(userId uint32, email string) {
 	// 实时查询
 	currUp, currDown := service.QueryUserTraffic(email, true)
 	// 保存查询
-	traffic := model.Traffic{UserId: userId, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-	model.AddTraffic(&traffic)
+	if currUp+currDown > 0 {
+		traffic := model.Traffic{UserId: userId, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+		model.AddTraffic(&traffic)
+	}
 }
 
 func queryAndSaveGlobalTraffic() (uint64, uint64) {
@@ -138,8 +140,10 @@ func queryAndSaveGlobalTraffic() (uint64, uint64) {
 	currUp, currDown := service.QueryGlobalTraffic(true, proxyTag)
 
 	// 保存查询
-	traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-	model.AddTraffic(&traffic)
+	if currUp+currDown > 0 {
+		traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+		model.AddTraffic(&traffic)
+	}
 
 	return currUp, currDown
 }

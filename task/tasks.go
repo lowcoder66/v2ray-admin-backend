@@ -29,8 +29,10 @@ func queryAndSaveTotalTraffic() {
 	currUp, currDown := service.QueryGlobalTraffic(true, proxyTag)
 
 	// 保存查询
-	traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-	model.AddTraffic(&traffic)
+	if currUp+currDown > 0 {
+		traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+		model.AddTraffic(&traffic)
+	}
 }
 
 func queryAndSaveUsersTraffic() {
@@ -62,9 +64,12 @@ func queryAndSaveUsersTraffic() {
 func queryAndSaveUserTraffic(user model.User) {
 	// 实时查询
 	currUp, currDown := service.QueryUserTraffic(user.Email, true)
+
 	// 保存查询
-	traffic := model.Traffic{UserId: user.Id, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-	model.AddTraffic(&traffic)
+	if currDown+currUp > 0 {
+		traffic := model.Traffic{UserId: user.Id, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+		model.AddTraffic(&traffic)
+	}
 
 	// 限额
 	up, down := model.GetUserTrafficOfCurrentMonth(user.Id)

@@ -43,11 +43,11 @@ pool_max_idle = 4
 poll_max_active = 8
 
 [smtp]
-host = "smtp.mxhichina.com"
-password = "nuoyi123!"
+host = "smtp.mail.com"
+password = "passwd"
 port = 465
-username = "attendant@chinanuoyi.cn"
-from = "VA-System"
+username = "someone@mail.com"
+from = "v2ray admin"
 
 [v2ray]
 host = "192.168.2.210"
