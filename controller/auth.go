@@ -99,7 +99,7 @@ func NewToken(ctx echo.Context) error {
 	}
 
 	// 密码匹配
-	if user.Passwd != "" && !util.PasswordMatch(req.Password, user.Passwd) {
+	if user.Passwd == "" || !util.PasswordMatch(req.Password, user.Passwd) {
 		c.Put(errorCacheKeyPrefix+req.Username, strconv.Itoa(errCount+1), 5*60)
 		return ctx.JSON(http.StatusBadRequest, response.ErrRes("用户名或密码错误", nil))
 	}
