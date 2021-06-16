@@ -30,8 +30,13 @@ func queryAndSaveTotalTraffic() {
 
 	// 保存查询
 	if currUp+currDown > 0 {
-		traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-		model.AddTraffic(&traffic)
+		traffic, exist := model.GetUserTrafficOfCurrentMonth(0)
+		if exist {
+			model.AddTrafficUpAndDown(traffic, currUp, currDown)
+		} else { // add
+			traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+			model.AddTraffic(&traffic)
+		}
 	}
 }
 
@@ -67,12 +72,17 @@ func queryAndSaveUserTraffic(user model.User) {
 
 	// 保存查询
 	if currDown+currUp > 0 {
-		traffic := model.Traffic{UserId: user.Id, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-		model.AddTraffic(&traffic)
+		traffic, exist := model.GetUserTrafficOfCurrentMonth(user.Id)
+		if exist {
+			model.AddTrafficUpAndDown(traffic, currUp, currDown)
+		} else { // add
+			traffic := model.Traffic{UserId: user.Id, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+			model.AddTraffic(&traffic)
+		}
 	}
 
 	// 限额
-	up, down := model.GetUserTrafficOfCurrentMonth(user.Id)
+	up, down := model.CountUserTrafficOfCurrentMonth(user.Id)
 	if up+down >= user.Limit {
 		user.Enabled = false
 

@@ -60,7 +60,7 @@ func UserTraffic(ctx echo.Context) error {
 	queryAndSaveUserTraffic(principal.Id, principal.Email)
 
 	// current month
-	up, down := model.GetUserTrafficOfCurrentMonth(principal.Id)
+	up, down := model.CountUserTrafficOfCurrentMonth(principal.Id)
 	res := UserTrafficRes{principal.Limit, up, down, userTrafficHistory(principal.Id, true, true)}
 
 	return ctx.JSON(http.StatusOK, res)
@@ -127,8 +127,13 @@ func queryAndSaveUserTraffic(userId uint32, email string) {
 	currUp, currDown := service.QueryUserTraffic(email, true)
 	// 保存查询
 	if currUp+currDown > 0 {
-		traffic := model.Traffic{UserId: userId, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-		model.AddTraffic(&traffic)
+		traffic, exist := model.GetUserTrafficOfCurrentMonth(userId)
+		if exist {
+			model.AddTrafficUpAndDown(traffic, currUp, currDown)
+		} else { // add
+			traffic := model.Traffic{UserId: userId, RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+			model.AddTraffic(&traffic)
+		}
 	}
 }
 
@@ -141,8 +146,13 @@ func queryAndSaveGlobalTraffic() (uint64, uint64) {
 
 	// 保存查询
 	if currUp+currDown > 0 {
-		traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
-		model.AddTraffic(&traffic)
+		traffic, exist := model.GetUserTrafficOfCurrentMonth(0)
+		if exist {
+			model.AddTrafficUpAndDown(traffic, currUp, currDown)
+		} else { // add
+			traffic := model.Traffic{RecordTime: time.Now(), UpLink: currUp, DownLink: currDown}
+			model.AddTraffic(&traffic)
+		}
 	}
 
 	return currUp, currDown

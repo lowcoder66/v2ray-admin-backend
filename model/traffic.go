@@ -27,8 +27,26 @@ func AddTraffic(traffic *Traffic) bool {
 	_ = sess.Rollback()
 	return false
 }
+func AddTrafficUpAndDown(mod *Traffic, upLink uint64, downLink uint64) {
+	sess := DB.NewSession()
+	defer sess.Close()
+	_ = sess.Begin()
 
-func GetUserTrafficOfCurrentMonth(userId uint32) (uint64, uint64) {
+	mod.UpLink = mod.UpLink + upLink
+	mod.DownLink = mod.DownLink + downLink
+
+	if _, err := sess.ID(mod.Id).Cols("up_link", "down_link").Update(mod); err == nil {
+		_ = sess.Commit()
+	}
+}
+func GetUserTrafficOfCurrentMonth(userId uint32) (*Traffic, bool) {
+	now := time.Now()
+
+	mod := &Traffic{}
+	exist, _ := DB.Where("user_id = ?", userId).And("record_time >= ?", util.TruncMonth(now)).And("record_time <= ?", util.CeilMonth(now)).Limit(1, 0).Get(mod)
+	return mod, exist
+}
+func CountUserTrafficOfCurrentMonth(userId uint32) (uint64, uint64) {
 	now := time.Now()
 
 	upLink, downLink := uint64(0), uint64(0)
