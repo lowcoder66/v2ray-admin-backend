@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-playground/validator/v10"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"v2ray-admin/backend/auth"
 	"v2ray-admin/backend/conf"
 	"v2ray-admin/backend/controller"
 	"v2ray-admin/backend/task"
-	"github.com/labstack/echo/v4"
-	"github.com/go-playground/validator/v10"
 )
 
 func init() {
@@ -43,11 +43,16 @@ func main() {
 	log.Println("注册定时任务...")
 	task.RegisterTasks()
 
+	// 输出配置文件
+	log.Println("输出配置文件：" + conf.App.V2ray.ConfigFile)
+	controller.WriteConfJson()
+
 	log.Println("启动Echo引擎...")
 	err := engine.Start(fmt.Sprintf(":%d", conf.App.Server.Port))
 	if err != nil {
 		log.Println("echo engine:", err)
 	}
+
 }
 
 func addRouters(e *echo.Echo) {

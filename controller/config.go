@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
+	"github.com/labstack/echo/v4"
 	"github.com/v2fly/v2ray-core/v4/infra/conf"
 	"github.com/v2fly/v2ray-core/v4/infra/conf/cfgcommon"
 	v2RayJsonReader "github.com/v2fly/v2ray-core/v4/infra/conf/json"
@@ -17,7 +19,6 @@ import (
 	c "v2ray-admin/backend/conf"
 	"v2ray-admin/backend/model"
 	"v2ray-admin/backend/util"
-	"github.com/labstack/echo/v4"
 )
 
 type (
@@ -49,7 +50,7 @@ type (
 		Tag            string                              `json:"tag,omitempty"`
 		Allocation     *conf.InboundDetourAllocationConfig `json:"allocate,omitempty"`
 		StreamSetting  *conf.StreamConfig                  `json:"streamSettings,omitempty"`
-		DomainOverride cfgcommon.StringList           `json:"domainOverride,omitempty"`
+		DomainOverride cfgcommon.StringList                `json:"domainOverride,omitempty"`
 		SniffingConfig *conf.SniffingConfig                `json:"sniffing,omitempty"`
 	}
 )
@@ -77,6 +78,52 @@ func GetConfLevelRange(ctx echo.Context) error {
 }
 
 func GetConf(ctx echo.Context) error {
+	serverConf := mergeConf()
+	return ctx.JSON(http.StatusOK, serverConf)
+}
+
+func WriteConfJson() {
+	serverConf := mergeConf()
+	writeConfJsonToFile(serverConf)
+}
+
+func writeConfJsonToFile(conf *ServerConfig) {
+	filePath := "/etc/v2ray/config.json"
+	if c.App.V2ray.ConfigFile != "" {
+		filePath = c.App.V2ray.ConfigFile
+	}
+
+	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+	if err != nil {
+		log.Panicln("打开配置文件出错", err)
+	}
+
+	defer file.Close()
+
+	err = file.Truncate(0)
+	if err != nil {
+		log.Panicln("清空文件出错", err)
+	}
+
+	write := bufio.NewWriter(file)
+
+	content, err := json.Marshal(conf)
+	if err != nil {
+		log.Panicln("序列化json出错", err)
+	}
+
+	_, err = write.Write(content)
+	if err != nil {
+		log.Panicln("写入配置文件出错", err)
+	}
+
+	err = write.Flush()
+	if err != nil {
+		log.Panicln("写入配置文件出错", err)
+	}
+}
+
+func mergeConf() *ServerConfig {
 	serverConf := readConf()
 
 	// level range
@@ -157,7 +204,7 @@ func GetConf(ctx echo.Context) error {
 		continue
 	}
 
-	return ctx.JSON(http.StatusOK, serverConf)
+	return serverConf
 }
 
 func readConf() *ServerConfig {

@@ -8,7 +8,7 @@ port = 8085
 dbname = "v2ray-admin"
 user = "va"
 password = "123456"
-host = "192.168.2.210"
+host = "localhost"
 port = 5432
 sslmode = "disable"
 # - Whether or not to use SSL (default is require, this is not the default for libpq)
@@ -37,7 +37,7 @@ manager = "redis"
 
 [redis]
 enable = true
-host = "192.168.2.210"
+host = "localhost"
 port = 6379
 pool_max_idle = 4
 poll_max_active = 8
@@ -54,6 +54,7 @@ host = "192.168.2.210"
 port = 8998
 tag = "proxy"
 level_range = "1-12"
+config_file = "./v2ray-server-config.json"
 
 [conf_tpl]
 address = "192.168.2.210"

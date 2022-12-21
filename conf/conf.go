@@ -53,6 +53,7 @@ type AppConfig struct {
 		Port       int    `toml:"port"`
 		Tag        string `toml:"tag"`
 		LevelRange string `toml:"level_range"`
+		ConfigFile string `toml:"config_file"`
 	} `toml:"v2ray"`
 	ConfTpl struct {
 		Address       string `toml:"address" json:"address"`

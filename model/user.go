@@ -12,7 +12,7 @@ type (
 		Name    string `xorm:"notnull VARCHAR(255)" json:"name"`
 		Email   string `xorm:"notnull unique VARCHAR(255)" json:"email"`
 		Level   uint32 `xorm:"notnull INT(11)" json:"level"`
-		AlterId uint32 `xorm:"notnull INT(11)" json:"alterId"`
+		AlterId uint32 `xorm:"notnull INT(11) default(0)" json:"alterId"`
 		Passwd  string `xorm:"notnull VARCHAR(255)" json:"passwd"`
 		Phone   string `xorm:"VARCHAR(255)" json:"phone"`
 		Enabled bool   `xorm:"notnull Bool default(true)" json:"enabled"`

@@ -19,7 +19,7 @@ type (
 		UId     string `json:"uid" form:"uid" validate:"required"`
 		Name    string `form:"name" json:"name" validate:"required"`
 		Level   uint32 `form:"level" json:"level" validate:"required"`
-		AlterId uint32 `form:"alterId" json:"alterId" validate:"required"`
+		AlterId uint32 `form:"alterId" json:"alterId"`
 		Phone   string `form:"phone" json:"phone"`
 		Enabled bool   `form:"enabled" json:"enabled"`
 		Locked  bool   `form:"locked" json:"locked"`
@@ -92,6 +92,9 @@ func AddUser(ctx echo.Context) error {
 	// 持久化
 	model.AddUser(user)
 
+	// 写入配置
+	WriteConfJson()
+
 	return ctx.JSON(http.StatusOK, &response.IDRes{Id: user.Id})
 }
 
@@ -122,7 +125,11 @@ func DelUser(ctx echo.Context) error {
 		}
 	}
 
+	// 持久化
 	model.RemoveUser(intId)
+
+	// 写入配置
+	WriteConfJson()
 
 	return ctx.JSON(http.StatusOK, response.MessageRes("操作成功"))
 }
@@ -175,6 +182,9 @@ func EditUser(ctx echo.Context) error {
 
 	// 不允许修改 email admin
 	model.ModifyUser(user, "name", "level", "alter_id", "phone", "enabled", "locked", "limit")
+
+	// 写入配置
+	WriteConfJson()
 
 	return ctx.JSON(http.StatusOK, response.MessageRes("操作成功"))
 }
