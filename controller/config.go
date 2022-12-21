@@ -3,7 +3,9 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/labstack/echo/v4"
+	"github.com/v2fly/v2ray-core/v4/infra/conf"
+	"github.com/v2fly/v2ray-core/v4/infra/conf/cfgcommon"
+	v2RayJsonReader "github.com/v2fly/v2ray-core/v4/infra/conf/json"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,8 +17,7 @@ import (
 	c "v2ray-admin/backend/conf"
 	"v2ray-admin/backend/model"
 	"v2ray-admin/backend/util"
-	"v2ray.com/core/infra/conf"
-	v2RayJsonReader "v2ray.com/core/infra/conf/json"
+	"github.com/labstack/echo/v4"
 )
 
 type (
@@ -30,12 +31,12 @@ type (
 	ServerConfig struct {
 		LogConfig       *conf.LogConfig             `json:"log,omitempty"`
 		RouterConfig    *conf.RouterConfig          `json:"routing,omitempty"`
-		DNSConfig       *conf.DnsConfig             `json:"dns,omitempty"`
+		DNSConfig       *conf.DNSConfig             `json:"dns,omitempty"`
 		InboundConfigs  []InboundDetourConfig       `json:"inbounds,omitempty"`
 		OutboundConfigs []conf.OutboundDetourConfig `json:"outbounds,omitempty"`
 		Transport       *conf.TransportConfig       `json:"transport,omitempty"`
 		Policy          *conf.PolicyConfig          `json:"policy,omitempty"`
-		Api             *conf.ApiConfig             `json:"api,omitempty"`
+		Api             *conf.APIConfig             `json:"api,omitempty"`
 		Stats           *conf.StatsConfig           `json:"stats,omitempty"`
 		Reverse         *conf.ReverseConfig         `json:"reverse,omitempty"`
 	}
@@ -48,7 +49,7 @@ type (
 		Tag            string                              `json:"tag,omitempty"`
 		Allocation     *conf.InboundDetourAllocationConfig `json:"allocate,omitempty"`
 		StreamSetting  *conf.StreamConfig                  `json:"streamSettings,omitempty"`
-		DomainOverride *conf.StringList                    `json:"domainOverride,omitempty"`
+		DomainOverride cfgcommon.StringList           `json:"domainOverride,omitempty"`
 		SniffingConfig *conf.SniffingConfig                `json:"sniffing,omitempty"`
 	}
 )

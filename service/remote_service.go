@@ -3,16 +3,16 @@ package service
 import (
 	"context"
 	"fmt"
+	proxyCmd "github.com/v2fly/v2ray-core/v4/app/proxyman/command"
+	statsCmd "github.com/v2fly/v2ray-core/v4/app/stats/command"
+	"github.com/v2fly/v2ray-core/v4/common/protocol"
+	"github.com/v2fly/v2ray-core/v4/common/serial"
+	"github.com/v2fly/v2ray-core/v4/proxy/vmess"
 	"google.golang.org/grpc"
 	"log"
 	"strings"
 	"v2ray-admin/backend/conf"
 	"v2ray-admin/backend/model"
-	proxyCmd "v2ray.com/core/app/proxyman/command"
-	statsCmd "v2ray.com/core/app/stats/command"
-	"v2ray.com/core/common/protocol"
-	"v2ray.com/core/common/serial"
-	"v2ray.com/core/proxy/vmess"
 )
 
 var handlerClient proxyCmd.HandlerServiceClient

@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"v2ray-admin/backend/auth"
 	"v2ray-admin/backend/conf"
 	"v2ray-admin/backend/controller"
 	"v2ray-admin/backend/task"
+	"github.com/labstack/echo/v4"
+	"github.com/go-playground/validator/v10"
 )
 
 func init() {
@@ -55,6 +55,7 @@ func addRouters(e *echo.Echo) {
 	e.POST(`/token`, controller.NewToken)
 	e.POST(`/password`, controller.PostPassword)
 	e.GET(`/configuration`, controller.GetConf)
+	e.GET(`/configuration.json`, controller.GetConf)
 	e.GET(`/configuration/level-range`, controller.GetConfLevelRange)
 
 	// auth
